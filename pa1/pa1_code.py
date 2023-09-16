@@ -234,3 +234,5 @@ task = "cdf"
 #exp_range = np.arange(7,15)
 e_data2, _ = gch.sweep_hoeffding(epsilon,exp_range,task,delta = delt)
 gch.plot_results(e_data2,delt)
+
+# Hi 
