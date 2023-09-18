@@ -95,6 +95,7 @@ class GaussGlivenkoHoeffding:
         print(e_prime)
         d_emp = self.hoeffding_bound(n_runs,e_prime)
         if d_emp > delta:
+            pass
             n_runs = self.find_nruns(e_prime,delta)
             #p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
             print(n_runs)
@@ -197,7 +198,7 @@ p1,p2,p3,m,delta = gch.exp_hoeffding(15000,.0025,'event',.005)
 #step 7: Done!, run sweep and plot 
 task = "event"
 epsilon = 0.01
-exp_range = np.linspace(4000,24000,7)
+exp_range = np.linspace(4000,28000,7)
 delt = 0.025
 e_data, _ = gch.sweep_hoeffding(epsilon,exp_range,task,delta = delt)
 gch.plot_results(e_data,delt) 
