@@ -95,9 +95,8 @@ class GaussGlivenkoHoeffding:
         print(e_prime)
         d_emp = self.hoeffding_bound(n_runs,e_prime)
         if d_emp > delta:
-            print("UH OH")
-            n_runs = self.find_nruns(e_prime,d_emp)
-            p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
+            n_runs = self.find_nruns(e_prime,delta)
+            #p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
             print(n_runs)
             pass #may need to run more if you don't satisfy confidence bound
         conf_window = self.get_prec(delta,n_runs)
@@ -198,7 +197,7 @@ p1,p2,p3,m,delta = gch.exp_hoeffding(15000,.0025,'event',.005)
 #step 7: Done!, run sweep and plot 
 task = "event"
 epsilon = 0.01
-exp_range = np.linspace(4000,28000,7)
+exp_range = np.linspace(4000,24000,7)
 delt = 0.025
 e_data, _ = gch.sweep_hoeffding(epsilon,exp_range,task,delta = delt)
 gch.plot_results(e_data,delt) 
@@ -219,6 +218,8 @@ plt.plot(data,t_cdf,'-.',label = 'true cdf')
 plt.plot(data,e_cdf,'--',label = 'empirical cdf')
 plt.xlabel('t')
 plt.ylabel('P(x<= t)')
+plt.legend() 
+plt.title('cdf plots')
 plt.show()
 
 #Step 9:
@@ -226,6 +227,8 @@ plt.show()
 #it will return an approximate cdf and a true cdf
 e_cdf, t_cdf = gch.glivenko_cdf(data)
 plt.plot(data,t_cdf-e_cdf,label='cdf error')
+plt.legend() 
+plt.title('cdf error')
 plt.show()
 
 
@@ -235,4 +238,3 @@ task = "cdf"
 e_data2, _ = gch.sweep_hoeffding(epsilon,exp_range,task,delta = delt)
 gch.plot_results(e_data2,delt)
 
-#Fuck aaron
