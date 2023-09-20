@@ -98,6 +98,7 @@ class GaussGlivenkoHoeffding:
             print(p_fail)
         d_emp = self.hoeffding_bound(n_runs,e_prime)
         if d_emp > delta:
+            pass
             n_runs = self.find_nruns(e_prime,delta)
             #p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
             print(n_runs)
