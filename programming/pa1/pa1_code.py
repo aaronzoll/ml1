@@ -5,7 +5,7 @@ from scipy.stats import norm as gauss
 
 class GaussGlivenkoHoeffding:
     def __init__(self,A = [0,1]):
-        #np.random.seed(0)
+        np.random.seed(0)
         self.A = A #defines event $A\subset \R$
         self.task_dict = {"event":self.event_probability,"cdf":self.glivenko_cdf}
 
@@ -91,9 +91,17 @@ class GaussGlivenkoHoeffding:
         window_candidate = self.hoeffding_bound(m_data,epsilon)/2
         n_runs = self.find_nruns(np.exp(-2*m_data*epsilon**2),delta)
         print(f"number of runs for eps {epsilon:.4f}, m_data {m_data} is {n_runs}")
+<<<<<<< HEAD
         p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
         e_prime = abs(2*np.exp(-2*m_data*epsilon**2)-p_fail)
+=======
+        p_fail, p_bound, p_diff = self.run_hoeffding(m_data,n_runs,epsilon,task)
+        e_prime = 2*np.exp(-2*m_data*epsilon**2)-p_fail
+>>>>>>> f128fd48769d51b970a0efa2819f5c856823ec60
         print(e_prime)
+        while p_fail == 0:
+            p_fail, p_bound, p_diff = self.run_hoeffding(m_data,n_runs,epsilon,task)
+            print(p_fail)
         d_emp = self.hoeffding_bound(n_runs,e_prime)
         if d_emp > delta:
             pass
@@ -123,7 +131,7 @@ class GaussGlivenkoHoeffding:
         return empirical_cdf
     
     def plot_results(self,results,delta=0.01):
-        p_approx = np.log(results[:,0]+0)
+        p_approx = np.log(results[:,0])
         p_uncert = np.log(results[:,0]+results[:,4])
         p_bound = np.log(results[:,2])
         m_range = results[:,3]
