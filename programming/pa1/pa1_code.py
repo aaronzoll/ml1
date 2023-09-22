@@ -66,9 +66,6 @@ class GaussGlivenkoHoeffding:
         #return empirical fm, hoeffding bound (rhs of 1), hb - fm
         p_bound = self.hoeffding_bound(m_data,epsilon) #(the Hoeffding bound for m_data,epsilon)
         exp_array = np.zeros(n_runs)
-        # for j in range(n_runs):
-        #     indic_exp = self.run_hoeffding_pre(m_data,epsilon,task) 
-        #     exp_array[j] = indic_exp
         exp_array = [self.run_hoeffding_pre(m_data,epsilon,task) for j in range(n_runs)]
         p_fail = np.mean(exp_array) 
         p_diff = p_bound - p_fail 
@@ -90,6 +87,7 @@ class GaussGlivenkoHoeffding:
         #step 6b
         window_candidate = self.hoeffding_bound(m_data,epsilon)/2
         n_runs = self.find_nruns(np.exp(-2*m_data*epsilon**2),delta)
+        print(n_runs)
         print(f"number of runs for eps {epsilon:.4f}, m_data {m_data} is {n_runs}")
         p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
         e_prime = abs(2*np.exp(-2*m_data*epsilon**2)-p_fail)
@@ -98,10 +96,10 @@ class GaussGlivenkoHoeffding:
             print(p_fail)
         d_emp = self.hoeffding_bound(n_runs,e_prime)
         if d_emp > delta:
-            pass
-            n_runs_new = self.find_nruns(e_prime,delta)
+            #n_runs_new = self.find_nruns(e_prime,delta)
             #p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
-            print(n_runs_new)
+            #print(n_runs_new)
+            #n_runs=n_runs_new
             pass #may need to run more if you don't satisfy confidence bound
         conf_window = self.get_prec(delta,n_runs)
         return p_fail, p_diff, p_bound,m_data, conf_window
