@@ -64,21 +64,23 @@ class BinClassification:
     
     def xpr(self,data,thresh,g = None):
         ## define tpr/fpr. You should use g to distinguish t vs. f
-        # x = f / t (for false positive rate / true positive rate)
-        return None 
+        x=np.exp(-g*thresh)
+        return x 
     
     def pr_density(self,t,prec = False):
         ## define precision / P(y=1|x) 
         # (collapsing into one method because they are similar)
-        return None
+        x=np.divide(self.alpha1*self.xpr(None,t,g1_app), np.add(self.alpha0*self.xpr(None,t,g0_app), self.alpha1*self.xpr(None,t,g1_app)))
+        return x 
 
     def objective_fun(self,t,lamb):
         #this should compute lamb * tpr + (1-lamb)*fpr
-        return None
+        f = lamb * self.xpr(None, t, g1_app) + (1-lamb)*self.pr_density(t)
+        return f
     
     def d_obj(self,t,lamb):
-        #d/dt (objective_func(t))
-        return None
+        d = np.divide(np.subtract((1-lamb)*(g0_app-g1_app)*self.alpha0*self.alpha1*np.exp(-g0_app*t), lamb*g1_app*np.power(np.add(self.alpha0*np.exp(-g0_app*t),self.alpha1*np.exp(-g1_app*t)),2)),np.power(np.add(self.alpha0*np.exp(-g0_app*t),self.alpha1*np.exp(-g1_app*t)),2))
+        return d
 
     def y_tilde(self,t,a,b):
         return None 
@@ -128,10 +130,9 @@ plt.plot(d0,np.add(cdf0,np.exp(-g0_app*d0))-1,label = 'model 0 error')
 plt.plot(d1,np.add(cdf1,np.exp(-g1_app*d1))-1,label = 'model 1 error')
 plt.xlabel('t')
 plt.ylabel('cdf error')
-plt.show()
 
 ##step 3: define metrics, tpr, fpr, precision, and P(y=1|x)
-""" plt.figure(3)
+plt.figure(3)
 t = np.linspace(0,20,15000)
 tpr = bc.xpr(None,t,g1_app)
 fpr = bc.xpr(None,t,g0_app)
@@ -141,49 +142,35 @@ plt.plot(t,tpr,label = 'tpr')
 plt.plot(t,fpr,label = 'fpr')
 plt.plot(t,prec,label = 'precision')
 plt.xlabel('t')
-plt.ylabel('metric') """
+plt.ylabel('metric')
+
+##step 4: find optimal threshold for joint objective lambda tpr + (1-lambda) prec, 
+##4a: by taking absolute max of the objective function 
+#4b: by finding the correct zero of its derivative 
+lamb = .5
+obj = bc.objective_fun(t,lamb)
+idx = np.argmax(obj)
+t_opt = t[idx]
+plt.plot(t,obj,label='objective')
+plt.plot(t_opt,obj[idx],'r*',label = 'optimal point')
+plt.title(f"optimal thresh at {t_opt:.5f}")
+plt.legend()
+
+plt.figure(4)
+dodt = bc.d_obj(t,lamb)  
+sort_idx = np.argsort(np.abs(dodt))
+opt_idx = sort_idx[np.argmax(obj[sort_idx[:10]])]
+n = 1500
+plt.plot(t[:n],dodt[:n],label = 'derivative of objective')
+#plt.plot(t[:n],y1[:n],label = 'first order Taylor')
+#plt.plot(t[:n],y2[:n], label = 'second order Taylor')
+plt.plot(t[opt_idx],dodt[opt_idx],'*',label = 'zero')
+plt.legend()
+plt.title(f"opt thresh at {t[opt_idx]:.5f}")
+plt.show()
     
 """ if __name__ == "__main__":
-  
 
- 
-
-
-    ##step 3: define metrics, tpr, fpr, precision, and P(y=1|x)
-    plt.figure(3)
-    t = np.linspace(0,20,15000)
-    tpr = bc.xpr(None,t,g1_app)
-    fpr = bc.xpr(None,t,g0_app)
-    prec = bc.pr_density(t,prec = True)
-    p1 = bc.pr_density(t)
-    plt.plot(t,tpr,label = 'tpr')
-    plt.plot(t,fpr,label = 'fpr')
-    plt.plot(t,prec,label = 'precision')
-    plt.xlabel('t')
-    plt.ylabel('metric')
-    ##step 4: find optimal threshold for joint objective lambda tpr + (1-lambda) prec, 
-    ##4a: by taking absolute max of the objective function 
-    #4b: by finding the correct zero of its derivative 
-    lamb = .5
-    obj = bc.objective_fun(t,lamb)
-    idx = np.argmax(obj)
-    t_opt = t[idx]
-    plt.plot(t,obj,label='objective')
-    plt.plot(t_opt,obj[idx],'r*',label = 'optimal point')
-    plt.title(f"optimal thresh at {t_opt:.5f}")
-    plt.legend()
-
-    plt.figure(4)
-    dodt = bc.d_obj(t,lamb)  
-    sort_idx = np.argsort(np.abs(y))
-    opt_idx = sort_idx[np.argmax(obj[sort_idx[:10]])]
-    n = 1500
-    plt.plot(t[:n],dodt[:n],label = 'derivative of objective')
-    #plt.plot(t[:n],y1[:n],label = 'first order Taylor')
-    #plt.plot(t[:n],y2[:n], label = 'second order Taylor')
-    plt.plot(t[opt_idx],dodt[opt_idx],'*',label = 'zero')
-    plt.legend()
-    plt.title(f"opt thresh at {t[opt_idx]:.5f}")
 
     ##step 5: plot P(y=1|x) and model y_tilde for P(y=1|x)
     # find parameters a,b for which sigma_a,b(t) matches P(y=1|x)
