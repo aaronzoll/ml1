@@ -66,10 +66,8 @@ class GaussGlivenkoHoeffding:
         #return empirical fm, hoeffding bound (rhs of 1), hb - fm
         p_bound = self.hoeffding_bound(m_data,epsilon) #(the Hoeffding bound for m_data,epsilon)
         exp_array = np.zeros(n_runs)
-        for j in range(n_runs):
-            indic_exp = self.run_hoeffding_pre(m_data,epsilon,task) 
-            exp_array[j] = indic_exp
-        p_fail = exp_array.mean() 
+        exp_array = [self.run_hoeffding_pre(m_data,epsilon,task) for j in range(n_runs)]
+        p_fail = np.mean(exp_array) 
         p_diff = p_bound - p_fail 
         return p_fail, p_bound, p_diff
     
@@ -83,25 +81,25 @@ class GaussGlivenkoHoeffding:
         #solves for epsilon in Hoeffding
         eps = np.sqrt(np.log(delta/2)/(-2*m_data))
         return eps
-        
+    
         
     def exp_hoeffding(self,m_data,epsilon,task,delta):
         #step 6b
         window_candidate = self.hoeffding_bound(m_data,epsilon)/2
         n_runs = self.find_nruns(np.exp(-2*m_data*epsilon**2),delta)
+        print(n_runs)
         print(f"number of runs for eps {epsilon:.4f}, m_data {m_data} is {n_runs}")
-        p_fail, p_bound, p_diff = self.run_hoeffding(m_data,n_runs,epsilon,task)
-        e_prime = 2*np.exp(-2*m_data*epsilon**2)-p_fail
-        print(e_prime)
+        p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
+        e_prime = abs(2*np.exp(-2*m_data*epsilon**2)-p_fail)
         while p_fail == 0:
             p_fail, p_bound, p_diff = self.run_hoeffding(m_data,n_runs,epsilon,task)
             print(p_fail)
         d_emp = self.hoeffding_bound(n_runs,e_prime)
         if d_emp > delta:
-            pass
-            n_runs = self.find_nruns(e_prime,delta)
+            #n_runs_new = self.find_nruns(e_prime,delta)
             #p_fail, p_bound, p_diff= self.run_hoeffding(m_data,n_runs,epsilon,task)
-            print(n_runs)
+            #print(n_runs_new)
+            #n_runs=n_runs_new
             pass #may need to run more if you don't satisfy confidence bound
         conf_window = self.get_prec(delta,n_runs)
         return p_fail, p_diff, p_bound,m_data, conf_window
@@ -121,9 +119,7 @@ class GaussGlivenkoHoeffding:
     def ecdf(self,n):
         #step 8 
         data = self.gen_data(n,sort=True)
-        empirical_cdf = np.zeros(n)
-        for i in range(n):
-            empirical_cdf[i] = i/n
+        empirical_cdf = np.linspace(0,1,n)
         return empirical_cdf
     
     def plot_results(self,results,delta=0.01):
@@ -150,7 +146,7 @@ gch = GaussGlivenkoHoeffding()
 t = np.arange(1,10**5)
 eps_range = np.array([.01,.025,.05,.1])
 for eps in eps_range:
-    hb = gch.hoeffding_bound(t,eps)+0.1
+    hb = gch.hoeffding_bound(t,eps)
     val_idx = hb<1
     t_filt = t[val_idx]
     hb_filt = hb[val_idx]
