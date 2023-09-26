@@ -47,7 +47,7 @@ class BinClassification:
     
     def model_error(self,data,g):
         ### step 1
-        err = np.subtract(self.model_cdf(data,g),self.e_cdf(data))
+        err = np.abs(np.subtract(self.model_cdf(data,g),self.e_cdf(data)))
         return err 
     
     def find_g(self,data,g_max = 10,N = 1000):
@@ -83,15 +83,29 @@ class BinClassification:
         return d
 
     def y_tilde(self,t,a,b):
-        return None 
+        y=1/(1+np.exp(-a*t+b))
+        return y 
     
     def score_error(self,t,a,b):
-        return None
+        err = np.abs(py1gx-self.y_tilde(t,a,b))
+        return err
 
     def find_ab(self,t,a_max = 15,b_max = 10,N=100):
         ## parameters a,b for y_tilde, which is a sigmoidal 
         # representing P(y=1|x); again, no sophisticated optimization!
-        a,b = None, None
+        La=np.linspace(0,a_max,N)
+        Lb=np.linspace(0,b_max,N)
+        cost=10**100
+        asave=0
+        bsave=0
+        for a in La:
+            for b in Lb:
+                E=self.score_error(t,a,b)
+                if abs(E.sum()) < cost:
+                    asave=a
+                    bsave=b
+                    cost=abs(E.sum())
+        a,b = asave, bsave
         return a,b 
     
 bc = BinClassification([5,.25],.95)
@@ -167,26 +181,25 @@ plt.plot(t[:n],dodt[:n],label = 'derivative of objective')
 plt.plot(t[opt_idx],dodt[opt_idx],'*',label = 'zero')
 plt.legend()
 plt.title(f"opt thresh at {t[opt_idx]:.5f}")
+
+
+##step 5: plot P(y=1|x) and model y_tilde for P(y=1|x)
+# find parameters a,b for which sigma_a,b(t) matches P(y=1|x)
+t = np.linspace(0,5,1000)
+py1gx = bc.pr_density(t,prec = False)
+a,b = bc.find_ab(t)
+y_tilde = bc.y_tilde(t,a,b)
+plt.figure(5)
+plt.plot(t,py1gx,label = 'P(y=1|x)')
+plt.plot(t,y_tilde,color = "black",linestyle = "--",label = 'model score')
+plt.xlabel('t')
+plt.ylabel('y_tilde')
+plt.title(f"P(y=1 | x) and model for a={a : 0.3f} and b={b : 0.3f}")
+plt.legend()
+
+plt.figure(7)
+plt.plot(t,py1gx-y_tilde,label = 'model error')
+plt.xlabel('t')
+plt.ylabel('P(y=1|x) model error')
+plt.title(f"Model Error")
 plt.show()
-    
-""" if __name__ == "__main__":
-
-
-    ##step 5: plot P(y=1|x) and model y_tilde for P(y=1|x)
-    # find parameters a,b for which sigma_a,b(t) matches P(y=1|x)
-    t = np.linspace(0,5,1000)
-    py1gx = bc.pr_density(t,prec = False)
-    a,b = bc.find_ab(t)
-    y_tilde = bc.y_tilde(t,a,b)
-    plt.figure(5)
-    plt.plot(t,py1gx,label = 'P(y=1|x)')
-    plt.plot(t,y_tilde,label = 'model score')
-    plt.xlabel('t')
-    plt.ylabel('y_tilde')
-    plt.legend()
-
-    plt.figure(7)
-    plt.plot(t,py1gx-y_tilde,label = 'model error')
-    plt.xlabel('t')
-    plt.ylabel('P(y=1|x) model error')
-    plt.show() """
