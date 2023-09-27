@@ -108,7 +108,7 @@ class BinClassification:
         a,b = asave, bsave
         return a,b 
     
-bc = BinClassification([5,.25],.95)
+bc = BinClassification([5,0.25],.95)
 #step 0: define method to generate exp data, generate some, and view
 d = bc.gen_data()
 plt.figure(1)
@@ -161,7 +161,7 @@ plt.ylabel('metric')
 ##step 4: find optimal threshold for joint objective lambda tpr + (1-lambda) prec, 
 ##4a: by taking absolute max of the objective function 
 #4b: by finding the correct zero of its derivative 
-lamb = .5
+lamb = 0.5
 obj = bc.objective_fun(t,lamb)
 idx = np.argmax(obj)
 t_opt = t[idx]
