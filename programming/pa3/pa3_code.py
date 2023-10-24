@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 class HilbertProj:
     def __init__(self,lim = 10,fun = np.sin, deg = 5, n_data = 150,mu_data = 0, var_data =3,noise_var = .25,N=10000,plotting = False):
+        np.random.seed(10)
         self.lim = lim
         self.deg = deg 
         self.fun = fun 
@@ -50,7 +51,6 @@ class HilbertProj:
         # and you should be able to return the result as an array, e.g. if t is an np.linspace
         k=len(coeff)
         N=len(t)
-        A=np.zeros((k,N))
         T=np.zeros(k)
         poft=np.zeros(N)
         for i in range(N):
@@ -144,12 +144,15 @@ class HilbertProj:
 
         taycof = self.get_taylor_coeff(deg)
         self.taylor_coeff = taycof
-        xsamp, ysamp = self.gen_data(deg)
+        samp_id=rnd.sample(range(len(xdata)),deg) 
+        xsamp= xdata[samp_id]
+        ysamp = ydata[samp_id]
         excof = self.get_exact_coeff(xsamp,ysamp,deg)
         self.exact_coeff = excof
         hpcof = self.solve_hp(xdata,ydata,deg)
         self.hilbert_coeff = hpcof 
-        hstcof =self.hilbert_coeffs[deg-2] ## recall that self.hilbert_coeffs are our standin for y^*_H
+        hstcof = self.hilbert_coeffs[deg-1] ## recall that self.hilbert_coeffs are our standin for y^*_H
+        
         yhst = self.poly(xdata_test,hstcof)
         yex = self.poly(xdata_test,excof)
         yhp = self.poly(xdata_test,hpcof)
@@ -157,17 +160,18 @@ class HilbertProj:
         yex_clean = self.poly(xdata,excof)
         yhp_clean = self.poly(xdata,hpcof)
         ytay_clean = self.poly(xdata,taycof)
-        bias = None #self.calc_mse(,)
-        exvar = None #self.calc_mse(,)
-        hpvar = None #self.calc_mse(,)
-        extot = None #self.calc_mse(,)
-        hptot = None #self.calc_mse(,)
+        
+        bias = self.calc_mse(ydata_test,yhp)
+        exvar = self.calc_mse(yhst,yex)
+        hpvar = self.calc_mse(yhst,yhp)
+        extot = self.calc_mse(ydata_test,yex)
+        hptot = self.calc_mse(ydata_test,yhst)
         ex_results = {'ypred': yex, 'ypred_clean': yex_clean, 'bias':bias,'var':exvar,'tot':extot}
         hp_results = {'ypred': yhp, 'ypred_clean': yhp_clean, 'bias':bias,'var':hpvar,'tot':hptot}
         tay_results = {'ypred':ytay, 'ypred_clean': ytay_clean, 'bias':bias,'var':0}
         return hp_results, ex_results, tay_results
 
-    def set_coeffs(self,m = 2500,sig = None,n=30):
+    def set_coeffs(self,m = 250,sig = None,n=41):
         ##### This method you may use for finding noiseless Hilbert Coefficients. 
         #### This is a crude way of approximating--and it very much is an approximation!--
         ### the projection in H. But this approximation should be better than the same obtained on 
@@ -178,7 +182,6 @@ class HilbertProj:
         h_arr = []
         t_arr = []
         for deg in np.arange(2,n): 
-            print(deg)
             taycof = self.get_taylor_coeff(deg)
             t_arr.append(taycof)
             adeg = a[:deg+1,:deg+1]
@@ -190,8 +193,12 @@ class HilbertProj:
     
 
     def calc_mse(self,y_true,y_approx):
+        m=len(y_true)
+        sum=0
+        for i in range(m):
+            sum+=(y_true[i]-y_approx[i])**2
         ## returns mse E((y_true - y_approx)^2)
-        return None 
+        return sum/m 
 
 
     
@@ -200,56 +207,54 @@ class HilbertProj:
         if m is None:
             m = self.n_data
         xdata,ydata = self.gen_data(m,0)
-        xd_test,yd_test = self.gen_data(m,self.noise_var)
+        xd_test,yd_test = self.gen_data(m,noise)
         deg_range = np.arange(2,drange)
         results_data  = np.zeros([deg_range.shape[0],7])
         predictions = np.zeros([ydata.shape[0],20])
         j = 0 
         for d in deg_range:
-            print(d)
             h,e,t = self.base_data(xdata,ydata,xd_test,yd_test,d)
             row_data = np.array([h['bias'],h['var'],h['tot'], e['bias'],e['var'], e['tot'], t['bias']])
             results_data[j,:] = row_data
             j+=1 
             if j==8:
-                plt.plot(xd_test,h["ypred"],'-.',label = 'hp_noise')
-                plt.plot(xd_test,e['ypred'],'--',label = 'exact_noise')
-                plt.plot(xdata,h["ypred_clean"],'-.',label = 'hp_clean')
-                plt.plot(xdata,e['ypred_clean'],'--',label = 'exact_clean')
-                plt.plot(xd_test,t["ypred"],':',label = 'Taylor')
-                plt.xlim([-5,7])
-                plt.ylim([-6,8])
-                plt.legend()
-                plt.show()
-        if plotting:
                 plt.plot(xdata,ydata,'k--',label = 'gt')
+                plt.plot(xdata,h["ypred_clean"],'-.',label = 'hp_clean')
+                plt.plot(xd_test,h["ypred"],'-.',label = 'hp_noise')
+                plt.plot(xdata,e['ypred_clean'],'--',label = 'exact_clean')
+                plt.plot(xd_test,e['ypred'],'--',label = 'exact_noise')
+                plt.plot(xd_test,t["ypred"],':',label = 'Taylor')
+                plt.xlim([-6,8])
+                plt.ylim([-6,8])
                 plt.legend()
                 plt.show()
         return deg_range, results_data
 
     def plot_sim_data(self,dr,rd):
-       pass 
-hp = HilbertProj(n_data = 1000,noise_var = 0)
-n=hp.n_data
-t=np.linspace(-10,10,n)
-y=hp.poly(t,[2,1,3,4])
-coeff=hp.exact_poly(t,100)
-#plt.plot(t,y)
-#plt.plot(t,coeff)
-#plt.plot(t,np.sin(t))
-#plt.xlim([-10,10])
-#plt.ylim([-2,2])
-print(hp.get_taylor_coeff(5))
-x_data, y_data = hp.gen_data()
-coeff_hp=hp.solve_hp(x_data,y_data,100)
-#plt.plot(t,hp.poly(t,coeff_hp))
-#plt.show()
+        hp_bias=[]
+        hp_var=[]
+        hp_tot=[]
+        for i in range(len(rd)):
+            hp_bias.append(rd[i][0])
+            hp_var.append(rd[i][1])
+            hp_tot.append(rd[i][2])
+        plt.plot(dr,hp_bias,'--',label="hp_bias")
+        plt.plot(dr,hp_var,':',label="hp_var")
+        plt.plot(dr,hp_tot,'k-',label="hp_tot")
+        plt.plot(dr,np.add(hp_bias,hp_var),".",label='bias+var')
+        plt.legend()
+        plt.xlim([-0.1,21])
+        plt.ylim([-0.1,5])
+        plt.show()
+
+
+hp = HilbertProj(n_data = 1000,noise_var = 0.25)
 plt.close('all')
 hp.set_coeffs()
-
-m = 150
-ddat, rdat = hp.run_sim(m,drange =21,noise =0.25,plotting = False)
+m=450
+ddat, rdat = hp.run_sim(m, drange =21,noise =0.25,plotting = False)
 hp.plot_sim_data(ddat,rdat)
+
 """ if __name__ == "__main__":
     hp = HilbertProj(n_data = 1000,noise_var = 0)
     plt.close('all')
