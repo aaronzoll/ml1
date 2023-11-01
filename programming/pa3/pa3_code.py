@@ -161,7 +161,7 @@ class HilbertProj:
         yhp_clean = self.poly(xdata,hpcof)
         ytay_clean = self.poly(xdata,taycof)
         
-        bias = self.calc_mse(ydata_test,yhp)
+        bias = self.calc_mse(ydata_test,yhst)
         exvar = self.calc_mse(yhst,yex)
         hpvar = self.calc_mse(yhst,yhp)
         extot = self.calc_mse(ydata_test,yex)

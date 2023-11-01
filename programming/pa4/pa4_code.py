@@ -35,15 +35,16 @@ class MLModel:
         if printing:
             self.x_eval = x_eval 
             self.y_eval = y_eval
+        
         for epoch in range(self.epochs):
             ## TODO (implement train step ) 
             y_pred = self.forward(x_data)
             grad, loss = self.grad(x_data, y_pred, y_data)
             self.update(grad)
             if printing: 
-                if True:
+                if epoch % 100 == 0:
                     m = self.metrics(x_eval,y_eval)
-                    print(f"epoch {epoch} and train loss {loss.mean():.2f}, test metrics {m:.2f}, grad {grad}, grad norm {la.norm(grad):.2f}")
+                    print(f"epoch {epoch} and train loss {loss.mean():.2f}, test metrics {m:.2f}, grad {np.round(grad,3)}, grad norm {la.norm(grad):.2f}")
 
     
     def e2e(self,n_train = 100, n_test = 10000,printing = False,data = None):
@@ -72,7 +73,7 @@ class LinReg(MLModel):
         self.degree = deg
         self.sf = np.ones(deg+1) #??? 
         self.set_hilberts()
-        self.model_coeff = 5*np.random.random(self.hp_coeff.shape[0])
+        self.model_coeff = .1*(np.random.random(self.hp_coeff.shape[0])-.5)
 
     def set_hilberts(self):
         x,y = self.gen_data()
@@ -82,12 +83,15 @@ class LinReg(MLModel):
     def gen_data(self, n = None, noise_var = .1):
         if n is None:
             n = self.n_data 
-        x_dat = np.random.normal(0,self.x_sig/5,n)
+        x_dat = np.random.normal(0,self.x_sig,n)
         x_dat.sort()
         y_dat = self.fun(x_dat) + np.random.normal(0,noise_var,n)
         return x_dat, y_dat 
 
     def forward(self,x):
+        #coeff=[]
+        #for i in range(self.degree+1):
+        #    coeff.append(self.model_coeff[i]*sm.factorial(i))
         y_pre = self.poly(x,self.model_coeff)
         return y_pre
 
@@ -110,11 +114,19 @@ class LinReg(MLModel):
                 vec_x[j]=x[i]**j
             grad += 2/self.n_data*(y_pre[i]-y_data[i])*vec_x
         #exit()
+        #grad /= sm.factorial(np.arange(grad.shape[0]))
         loss = self.loss(y_data,y_pre)
         return grad, loss
 
     def update(self,grad):
-        self.model_coeff = self.model_coeff - (self.lr * grad)
+        k=self.degree+1
+        coeff=[]
+        for i in range(k):
+            coeff.append(self.model_coeff[i]*sm.factorial(i))
+        self.model_coeff = coeff - (self.lr * grad)
+        for i in range(k):
+            self.model_coeff[i]=self.model_coeff[i]/sm.factorial(i)
+        
 
 
     def poly(self,t,coeff=None,):
@@ -267,7 +279,7 @@ def testinglogreg(logregr1,logregr2,n_train,n_test):
     plt.show()
     return logregr1,logregr2
 
-reg = LinReg(n_data = 1500,deg = 9,fun = np.sin,x_sig = 1.5,epoch=5000)
+reg = LinReg(n_data = 1500,deg = 5,fun = np.sin,x_sig = 1.5,epoch=5000,lr = 0.001)
 testinglinreg(reg,500,1000)
 
 """ if __name__ == "__main__": 
