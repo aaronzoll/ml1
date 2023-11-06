@@ -301,8 +301,8 @@ def testinglogreg(logregr1,logregr2,n_train,n_test,thresh=0.5):
 
     test=1
     if test == 1:
-        plt.plot(x_dat,ytild1,'-.',label = f"y_score w nll loss (accuracy {m1:.7f})")
-        plt.plot(x_dat,ytild2,'-.',label = f"y_score w mse loss (accuracy {m2:.7f})")
+        plt.plot(x_dat,ytild1,'-.',label = f"y_score w nll loss (accuracy {m1:.4f})")
+        plt.plot(x_dat,ytild2,'-.',label = f"y_score w mse loss (accuracy {m2:.4f})")
         plt.plot(x_dat,y1,'-.',label = 'y_pred w nll loss')
         plt.plot(x_dat,y2,'-.',label = 'y_pred w mse loss')
     plt.legend()
@@ -311,12 +311,12 @@ def testinglogreg(logregr1,logregr2,n_train,n_test,thresh=0.5):
 
 
 if __name__ == "__main__": 
-    d=19
-    reg = LinReg(n_data = 1500,deg = d,fun = np.sin,x_sig = 2.5,epoch=100000,lr=0.0003)
-    testinglinreg(reg,500,1500)
-    #logreg1 = LogReg(loss = 'nll',p1 =.05,epochs = 5000,x_sig=2,m1=-2)
-    #logreg2 = LogReg(loss = 'not nll',p1=.05,epochs = 5000,x_sig=2,m1=-2)
-    #r1,r2 =  testinglogreg(logreg1,logreg2,10000,250000,thresh=0.5)
+    d=9
+    reg = LinReg(n_data = 1500,deg = d,fun = np.sin,x_sig = 1.5,epoch=10000,lr=0.003)
+    #testinglinreg(reg,500,1000)
+    logreg1 = LogReg(loss = 'nll',p1 =.5,epochs = 1500,x_sig=2,m1=-8)
+    logreg2 = LogReg(loss = 'not nll',p1=.5,epochs = 1500,x_sig=2,m1=-8)
+    r1,r2 =  testinglogreg(logreg1,logreg2,5000,250000,thresh=0.5)
 
 
 

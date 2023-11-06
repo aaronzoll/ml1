@@ -312,7 +312,7 @@ def testinglogreg(logregr1,logregr2,n_train,n_test,thresh=0.5):
 
 if __name__ == "__main__": 
     d=19
-    reg = LinReg(n_data = 1500,deg = d,fun = np.sin,x_sig = 2.5,epoch=100000,lr=0.0003)
+    reg = LinReg(n_data = 1500,deg = d,fun = np.sin,x_sig = 2.5,epoch=10000,lr=0.0003)
     testinglinreg(reg,500,1500)
     #logreg1 = LogReg(loss = 'nll',p1 =.05,epochs = 5000,x_sig=2,m1=-2)
     #logreg2 = LogReg(loss = 'not nll',p1=.05,epochs = 5000,x_sig=2,m1=-2)
