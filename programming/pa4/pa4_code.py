@@ -314,8 +314,8 @@ if __name__ == "__main__":
     d=9
     reg = LinReg(n_data = 1500,deg = d,fun = np.sin,x_sig = 1.5,epoch=10000,lr=0.003)
     #testinglinreg(reg,500,1000)
-    logreg1 = LogReg(loss = 'nll',p1 =.5,epochs = 1500,x_sig=2,m1=-8)
-    logreg2 = LogReg(loss = 'not nll',p1=.5,epochs = 1500,x_sig=2,m1=-8)
+    logreg1 = LogReg(loss = 'nll',p1 =.5,epochs = 1500,x_sig=2,m1=-2)
+    logreg2 = LogReg(loss = 'not nll',p1=.5,epochs = 1500,x_sig=2,m1=-2)
     r1,r2 =  testinglogreg(logreg1,logreg2,5000,250000,thresh=0.5)
 
 
